@@ -1,0 +1,135 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: zw-nginx-config
+  namespace: zw
+  annotations:
+    kubesphere.io/alias-name: ningx配置
+    kubesphere.io/creator: liding
+data:
+  www.conf: |-
+    server {
+    listen          80;
+    server_name     ems.appinthestore.com ems-job.appinthestore.com;
+    root            /data/www/emp/htdocs;
+
+    location / {
+        if ($request_method = 'OPTIONS') {
+            add_header Access-Control-Allow-Origin *;
+            add_header Access-Control-Allow-Methods GET,POST,PUT,DELETE,OPTIONS;
+            return 204;
+        }
+        index index.php index.html error/index.html;
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+
+    location ~ \.php$ {
+        fastcgi_index index.php;
+        include       fastcgi_params;
+        fastcgi_pass  127.0.0.1:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param SERVER_NAME $http_host;
+        fastcgi_param ENV product;    
+        fastcgi_ignore_client_abort on;
+    }
+
+    location ~ \.(swf|xml|gif|jpg|jpeg|png|bmp|ico)$ {
+        expires max;
+    }
+
+    location ~ \.(js|css|xml)$ {
+        expires max;
+    }
+
+    }
+  nginx.conf: |-
+    user www www;
+    worker_processes      2;
+    worker_cpu_affinity auto;
+
+    pid       nginx.pid;
+    error_log /dev/stdout error;
+    daemon off;
+
+    events {
+        use epoll;
+        worker_connections 102400;
+    }
+    worker_rlimit_nofile   102400;
+
+    http {
+    include       mime.types;
+    server_info   off;
+    server_tokens off;
+    server_tag    off;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for" $host '
+                        '$upstream_addr $upstream_status $request_time $upstream_response_time';
+    access_log       /dev/stdout main;
+    client_max_body_size             20m;
+    client_body_buffer_size          8m;
+    client_header_buffer_size      512k;
+    large_client_header_buffers 32 512k;
+    reset_timedout_connection        on;
+
+    sendfile          on;
+    tcp_nopush        on;
+    tcp_nodelay       on;
+    keepalive_timeout 120;
+
+    fastcgi_intercept_errors on;
+    fastcgi_connect_timeout  90;
+    fastcgi_send_timeout    300;
+    fastcgi_read_timeout    300;
+    fastcgi_buffer_size    512k;
+    fastcgi_buffers     16 512k;
+    fastcgi_busy_buffers_size    512k;
+    fastcgi_temp_file_write_size 512k;
+    fastcgi_ignore_client_abort on;
+    
+    gzip               on;
+    gzip_min_length    1k;
+    gzip_buffers  16 512k;
+    gzip_http_version 1.1;
+    gzip_comp_level     2;
+    gzip_types text/plain text/css text/js text/xml text/javascript application/javascript application/x-javascript application/json application/xml application/rss+xml image/svg+xml;
+    gzip_vary          on;
+
+    charset           utf-8;
+
+    ssi               on;
+    ssi_silent_errors on;
+    ssi_types         text/shtml;
+
+    fastcgi_temp_path     fastcgi_temp;
+    client_body_temp_path client_body_temp;
+    proxy_temp_path       proxy_temp;
+    scgi_temp_path        scgi_temp;
+    uwsgi_temp_path       uwsgi_temp;
+
+    #error_page  500 502 503 504      /50x.html;
+    #error_page  400 403 405 408 404  /40x.html;
+
+    server {
+        listen       80 default;
+        listen  443 default;
+        server_name  _;
+        access_log   off;
+
+        location /php-fpm-stats {
+          fastcgi_pass 127.0.0.1:9000;
+          include fastcgi_params;
+          fastcgi_param SCRIPT_FILENAME $fastcgi_script_name;
+        }
+    }
+
+    include sites-enabled/*.conf;
+    }

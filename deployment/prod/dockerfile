@@ -1,0 +1,32 @@
+FROM harbor.gw-ec.com/library/busybox:latest
+
+# 定义创建镜像过程中使用的变量
+ARG appName=zw
+
+# 定义环境变量
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+
+# 增加基础配置 创建目录、增加www用户
+RUN mkdir -p /data/www/ /tmp/$appName/ && \
+    echo "www:x:1000:" >> /etc/group && \
+    echo "www:x:1000:1000::/home/www:/sbin/nologin" >> /etc/passwd && \
+    chown www:www -R /tmp/$appName/
+
+# 复制代码文件
+ADD --chown=1000:1000 . /tmp/$appName/
+
+
+# 增加配置，如 .env 文件改名、把共享存储软链到代码目录 等
+RUN rm -rf /tmp/$appName/public/upload/ && \
+    mkdir /tmp/$appName/logs/ -p && \
+    #ln -s /mnt/public/tmp  /tmp/$appName/public/ && \
+    #ln -s /mnt/public/upload  /tmp/$appName/public/ && \
+    #ln -s /mnt/authlog  /tmp/$appName/ && \
+    chown www.www -R /tmp/$appName && \
+    cd /tmp/ && tar -zcvf $appName.tar.gz --exclude=$appName/.git $appName && \
+    echo "#! /bin/sh" > /root/entrypoint.sh && \
+    echo "tar -zxvf /tmp/$appName.tar.gz -C /data/www/" >> /root/entrypoint.sh && \
+    chmod 755 /root/entrypoint.sh
+
+CMD ["sh","-c","/root/entrypoint.sh"]

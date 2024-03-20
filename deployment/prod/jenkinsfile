@@ -1,0 +1,61 @@
+pipeline {
+    agent {
+        node {
+            label 'ydzs-jnlp'
+        }
+    }
+
+    environment {
+        HARBOR_CREDENTIAL_ID = 'harbor_id'
+        GITLAB_CREDENTIAL_ID = 'user-test-gitlab-token'
+        KUBECONFIG_CREDENTIAL_ID = 'user-test-k8s-token'
+        REGISTRY = 'harbor.gw-ec.com'
+        PROJECT_NAME = 'zw'
+        APP_NAME = 'zw'
+        DOCKER_FILE = 'deployment/prod/dockerfile'
+        DEPLOY_FILE = 'deployment/prod/deployment.yaml'
+        PHP_VERSION = 'php-5.6.37'
+        PHP_CONFIG_FILE = 'deployment/prod/user-test-php-config.yaml'
+        NGINX_CONFIG_FILE = 'deployment/prod/user-test-nginx-config.yaml'
+    }
+
+    stages {
+        stage ('checkout scm') {
+            steps {
+                checkout(scm)
+            }
+        }
+
+        stage ('build & push') {
+            steps {
+                container ('jnlp') {
+                    withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$HARBOR_CREDENTIAL_ID" ,)]) {
+                        sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
+                        sh 'docker build -f ${DOCKER_FILE} -t $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER .'
+                        sh 'docker push  $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER'
+                    }
+                }
+            }
+        }
+
+//        stage('deploy to prod') {
+//            steps {
+//                         sh 'kubectl apply -f ${PHP_CONFIG_FILE}'
+//                          sh 'kubectl apply -f ${NGINX_CONFIG_FILE}'
+// //                        sh 'envsubst < ${DEPLOY_FILE} | kubectl apply -f -'
+// // 			            sh 'envsubst < ${DEPLOY_FILE_webmin} | kubectl apply -f -'
+//            }
+//        }
+
+       stage('deploy to prod') {
+           steps {
+               container ('kubectl') {
+                        sh 'kubectl apply -f ${PHP_CONFIG_FILE}'
+                         sh 'kubectl apply -f ${NGINX_CONFIG_FILE}'
+                       sh 'envsubst < ${DEPLOY_FILE} | kubectl apply -f -'
+// 			            sh 'envsubst < ${DEPLOY_FILE_webmin} | kubectl apply -f -'
+              }
+           }
+       }
+    }
+}

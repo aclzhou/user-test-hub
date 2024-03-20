@@ -1,0 +1,30 @@
+pipeline {
+    agent {
+        node {
+            label 'ydzs-jnlp'
+        }
+    }
+
+    environment {
+        HARBOR_CREDENTIAL_ID = 'ecr-auth'
+        GITLAB_CREDENTIAL_ID = 'user-test-gitlab-token'
+        KUBECONFIG_CREDENTIAL_ID = 'user-test-k8s-token'
+        REGISTRY = '091505511369.dkr.ecr.us-east-1.amazonaws.com'
+        HARBOR_NAME = 'tools'
+        PROJECT_NAME = 'zw1'
+        APP_NAME = 'zw1'
+        DOCKER_FILE = 'deployment/prod/dockerfile'
+        DEPLOY_FILE = 'deployment/prod/deployment.yaml'
+        PHP_VERSION = 'php-5.6.37'
+        PHP_CONFIG_FILE = 'deployment/prod/user-test-php-config.yaml'
+        NGINX_CONFIG_FILE = 'deployment/prod/user-test-nginx-config.yaml'
+    }
+
+    stages {
+        stage ('checkout scm') {
+            steps {
+                checkout(scm)
+            }
+        }
+    }
+}
