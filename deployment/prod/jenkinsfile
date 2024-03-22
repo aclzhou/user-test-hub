@@ -30,7 +30,7 @@ pipeline {
             steps {
                 container ('jnlp') {
                     withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$HARBOR_CREDENTIAL_ID" ,)]) {
-                        sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
+                        sh 'echo "$DOCKER_PASSWORD" | podmin login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
                         sh 'docker build -f ${DOCKER_FILE} -t $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER .'
                         sh 'docker push  $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER'
                     }
