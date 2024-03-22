@@ -9,7 +9,7 @@ pipeline {
         HARBOR_CREDENTIAL_ID = 'harbor_id'
         GITLAB_CREDENTIAL_ID = 'user-test-gitlab-token'
         KUBECONFIG_CREDENTIAL_ID = 'user-test-k8s-token'
-        REGISTRY = 'harbor.gw-ec.com'
+        REGISTRY = '192.168.11.91:80'
         PROJECT_NAME = 'zw'
         APP_NAME = 'zw'
         DOCKER_FILE = 'deployment/prod/dockerfile'
