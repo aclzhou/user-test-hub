@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        HARBOR_CREDENTIAL_ID = 'harbor_id'
+        //HARBOR_CREDENTIAL_ID = 'harbor_id'
         GITLAB_CREDENTIAL_ID = 'user-test-gitlab-token'
         KUBECONFIG_CREDENTIAL_ID = 'user-test-k8s-token'
         REGISTRY = 'harbor.gw-ec.com'
