@@ -22,9 +22,9 @@ pipeline {
     stages {
         stage ('checkout scm') {
             steps {
-                container ('jnlp') {
+                //container ('jnlp') {
                     checkout(scm)
-                }
+                //}
             }
         }
 
