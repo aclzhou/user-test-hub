@@ -32,9 +32,9 @@ pipeline {
             steps {
                 container ('base') {
                     withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$HARBOR_CREDENTIAL_ID" ,)]) {
-                        sh 'echo "$DOCKER_PASSWORD" | podman login --tls-verify=false $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
-                        sh 'podman build --tls-verify=false -f ${DOCKER_FILE} -t $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER .'
-                        sh 'podman push --tls-verify=false $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER'
+                        sh 'echo "$DOCKER_PASSWORD" | podman login  $REGISTRY -u "$DOCKER_USERNAME" --password-stdin --tls-verify=false'
+                        sh 'podman build -f ${DOCKER_FILE} -t $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER . --tls-verify=false'
+                        sh 'podman push  $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER --tls-verify=false'
                     }
                 }
             }
