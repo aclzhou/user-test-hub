@@ -28,11 +28,11 @@ pipeline {
 
         stage ('build & push') {
             steps {
-                container ('jnlp') {
+                container ('base') {
                     withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$HARBOR_CREDENTIAL_ID" ,)]) {
-                        sh 'echo "$DOCKER_PASSWORD" | podmin login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
-                        sh 'docker build -f ${DOCKER_FILE} -t $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER .'
-                        sh 'docker push  $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER'
+                        sh 'echo "$DOCKER_PASSWORD" | podman login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
+                        sh 'podman build -f ${DOCKER_FILE} -t $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER .'
+                        sh 'podman push  $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER'
                     }
                 }
             }
@@ -49,7 +49,7 @@ pipeline {
 
        stage('deploy to prod') {
            steps {
-               container ('kubectl') {
+               container ('base') {
                         sh 'kubectl apply -f ${PHP_CONFIG_FILE}'
                          sh 'kubectl apply -f ${NGINX_CONFIG_FILE}'
                        sh 'envsubst < ${DEPLOY_FILE} | kubectl apply -f -'
