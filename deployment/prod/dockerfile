@@ -1,4 +1,4 @@
-FROM harbor.gw-ec.com/library/busybox:latest
+FROM busybox:latest
 
 # 定义创建镜像过程中使用的变量
 ARG appName=zw
